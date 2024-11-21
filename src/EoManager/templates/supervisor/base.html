@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock title %}</title>
+    {% block head %}
+    {% endblock head %}
+</head>
+<body>
+    <header>
+        <ul>
+            <li><a href="{% url "supervisor:tickets_list" %}">Талоны</a></li>
+            <li><a href="{% url "supervisor:windows_list" %}">Окна</a></li>
+            <li><a href="{% url "supervisor:free_time_tickets_list" %}">Доступ к ПЗ</a></li>
+        </ul>
+    </header>
+    <div class="content">
+        {% block content %}
+        {% endblock content %}
+    </div>
+    <footer>
+        <p>Footer</p>
+    </footer>
+</body>
+</html>

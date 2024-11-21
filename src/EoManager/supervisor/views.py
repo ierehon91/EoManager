@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 @require_GET
 def tickets_list(request: HttpRequest) -> HttpResponse:
     """Страница со списком талонов"""
-    pass
+    return render(request, 'supervisor/tickets_list.html')
 
 
 @login_required
@@ -20,9 +20,10 @@ def fetch_tickets_list(request: HttpRequest) -> str:
 
 @login_required
 @require_GET
-def ticket_detail(request: HttpRequest) -> HttpResponse:
+def ticket_detail(request: HttpRequest, ticket_id: int) -> HttpResponse:
     """Страница с детальной иформацией о талоне и его истории"""
-    pass
+    context = {'ticket_id': ticket_id}
+    return render(request, 'supervisor/ticket_detail.html', context=context)
 
 
 @login_required
@@ -36,7 +37,7 @@ def fetch_ticket_history(request: HttpRequest) -> str:
 @require_GET
 def windows_list(request: HttpRequest) -> HttpResponse:
     """Страница со списком окон"""
-    pass
+    return render(request, 'supervisor/windows_list.html')
 
 
 @login_required
@@ -50,7 +51,7 @@ def fetch_windows_list(request: HttpRequest) -> str:
 @require_GET
 def free_time_tickets_list(request: HttpRequest) -> HttpResponse:
     """Страница со списком доступных для ПЗ услуг"""
-    pass
+    return render(request, 'supervisor/free_time_tickets_list.html')
 
 
 @login_required
