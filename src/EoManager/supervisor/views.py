@@ -21,7 +21,7 @@ def fetch_tickets_list(request: HttpRequest) -> str:
 @login_required
 @require_GET
 def ticket_detail(request: HttpRequest, ticket_id: int) -> HttpResponse:
-    """Страница с детальной иформацией о талоне и его истории"""
+    """Страница с детальной информацией о талоне и его истории"""
     context = {'ticket_id': ticket_id}
     return render(request, 'supervisor/ticket_detail.html', context=context)
 
