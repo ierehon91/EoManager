@@ -3,6 +3,8 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 
+from supervisor.services.eoapi import TicketsManager
+
 
 @login_required
 @require_GET
@@ -15,7 +17,9 @@ def tickets_list(request: HttpRequest) -> HttpResponse:
 @require_GET
 def fetch_tickets_list(request: HttpRequest) -> str:
     """JSON со списком талонов"""
-    pass
+    api = TicketsManager()
+    result = api.get_tickets_list()
+    return HttpResponse(result)
 
 
 @login_required

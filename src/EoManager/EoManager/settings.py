@@ -128,3 +128,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EO_API_SERVER = env('EO_API_SERVER')
+EO_API_PORT = env('EO_API_PORT')
+EO_API_LOGIN = env('EO_API_LOGIN')
+EO_API_PASSWORD = env('EO_API_PASSWORD')

@@ -8,7 +8,41 @@
     <div class="search">
         <p>Форма с поиском</p>
     </div>
+    <div>
+        <a href="#" class="update-button">Обновить</a>
+    </div>
     <div id="tickets-list">
         <p>Таблица со списком талонов</p>
+        <div id="table-tickets-list"></div>
     </div>
 {% endblock content %}
+
+{%block is_rady%}
+    <script>
+
+        let table = document.getElementById('table-tickets-list')
+        function get_tickets_list() {
+            let options = {
+                method: 'GET',
+                mode: 'same-origin',
+            }
+            fetch(
+                "{% url 'supervisor:fetch_tickets_list' %}", options).then(
+                    response => response.json()).then(data => {
+                console.log(data.content)
+                table.innerHTML = data.content
+            })
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            get_tickets_list()
+        })
+
+        document.querySelector('a.update-button').addEventListener('click', function (e) {
+            get_tickets_list()
+        })
+        
+        
+        
+    </script>
+{% endblock is_rady %}
