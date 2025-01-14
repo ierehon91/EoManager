@@ -1,4 +1,6 @@
 import time
+from os.path import split
+
 from pydantic import BaseModel, field_validator
 from supervisor.services.encoding.ticket_status import ticket_statuses
 
@@ -43,10 +45,11 @@ class Ticket(BaseModel):
     normative: str = ''  # время норматива по оказанию услуги
     actualServingTime: str = ''  # время обслуживания
     creationDate: str
-    waitTime: str = '00:00:00'  # время ожидания заявителя в очереди в формате hh:mm:ss
+    waitTime: dict = {'wait': '0 мин. 0 сек.', 'status': 'green'}  # время ожидания заявителя в очереди в формате
     waitTimeExpired: bool = False
     recordtimeString: str = None
     employee: Specialist = None
+    appointmentWaitThreshold: str = None # Приоритет талона
 
     @field_validator('queueDate', mode='before')
     @classmethod
@@ -68,6 +71,23 @@ class Ticket(BaseModel):
     def convert_normative(cls, normative_int: int) -> str:
         return time.strftime('%H:%M:%S', time.gmtime(normative_int / 1000))
 
+    @field_validator('waitTime', mode='before')
+    @classmethod
+    def convert_wait_time(cls, wait_time: str) -> dict:
+        h, m, s = map(int, wait_time.split(':'))
+        m = h * 60 if h > 0 else m
+        status = 'green'
+        if m >= 10:
+            status = 'yellow'
+        if m >= 15:
+            status = 'red'
+        return {'wait': f'{m} мин. {s} сек.', 'status': status}
+
 
 class Content(BaseModel):
     content: list[Ticket]
+
+    @field_validator('content', mode='after')
+    @classmethod
+    def sorted_content(cls, content: list) -> list:
+        return sorted(content, key=lambda ticket: ticket.queueDate)

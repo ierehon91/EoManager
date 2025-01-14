@@ -3,6 +3,7 @@ venv
 *.pot
 *.pyc
 __pycache__
+.idea
 .env
 db.sqlite3
 .vscode

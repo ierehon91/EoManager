@@ -1,0 +1,80 @@
+.update {
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+
+#tickets-list {
+    margin-top: 10px;
+}
+
+#tickets-list table {
+    width: 100%;
+}
+
+table {
+    border-spacing: 0;
+}
+
+
+#tickets-list table thead tr th {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-align: left;
+    background-color: #686868;
+    color: #f1f1f1;
+}
+
+#tickets-list table tbody tr:hover {
+    /*background-color: #dddddd;*/
+}
+
+#tickets-list table tbody tr td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 16px;
+    padding-right: 16px;
+    vertical-align: middle;
+    border-bottom: 2px solid #ffffff;
+}
+
+.ticketcode {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.waitTimeStatus span {
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.waitTimeStatus-red span {
+    background-color: #ff8080;
+}
+
+.waitTimeStatus-yellow span {
+    background-color: #ffffa6;
+}
+
+.waitTimeStatus-green span {
+    background-color: #ccffcc;
+}
+
+.state-container {
+    display: flex;
+    align-items: center; /* Выравнивание по вертикали */
+    gap: 12px; /* Отступ между элементами */
+}
+
+.state-left-side {
+    width: 8px;
+    height: 50px;
+    line-height: 60px; /* Центровка текста по вертикали внутри div */
+    text-align: center;
+}
+
+.state-right-side {
+    flex-grow: 1; /* Растягивание правого блока, чтобы он занимал все свободное пространство */
+}

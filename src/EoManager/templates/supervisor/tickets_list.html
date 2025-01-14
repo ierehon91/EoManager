@@ -1,48 +1,117 @@
 {% extends "supervisor/base.html" %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static "styles/tickets-table.css" %}">
+{% endblock head %}
+
+
 
 {% block content %}
-    <h1>Список талонов</h1>
-    <div class="filter">
-        <p>Форма с фильтрами</p>
-    </div>
-    <div class="search">
-        <p>Форма с поиском</p>
-    </div>
-    <div>
-        <a href="#" class="update-button">Обновить</a>
+    <h1>Список талонов ЭО</h1>
+    <div class='sticky-top'>
+        <div class="filter">
+            <form action="{% url "supervisor:fetch_tickets_list" %}" method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="mt-1 col-2">
+                        <label for="date"><b>Дата:</b></label>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ date }}">
+                    </div>
+
+                    <div class="mt-1 col-5">
+                        <label for="division"><b>Подразделение:</b></label>
+                        <select name="division" id="division" class="form-control">
+
+                            <option value="1911">СМАРТ-МФЦ в г. Семилуки</option>
+                            <option value="1924">СМАРТ-МФЦ в рп Хохольском</option>
+                            <option value="1903">СМАРТ-МФЦ в Коминтерновском районе г. Воронежа</option>
+                            <option value="1917">СМАРТ-МФЦ в г. Калаче</option>
+                            <option value="1902">СМАРТ-МФЦ в г. Россошь</option>
+                            <option value="97930927">СМАРТ-МФЦ "ГРАД"</option>
+                            <option value="14048028">СМАРТ-МФЦ в Центральном районе г. Воронежа</option>
+                            <option value="1930">СМАРТ-МФЦ города Воронеж №1</option>
+                            <option value="1905">СМАРТ-МФЦ в г. Нововоронеже</option>
+                            <option value="1939">Филиал АУ «МФЦ» в Коминтерновском районе "Северный" г.Воронежа</option>
+
+                        </select>
+                    </div>
+
+                    <div class="mt-1 col-3">
+                        <span><b>Тип записи:</b></span><br>
+
+                        <input type="checkbox" name="prerecord" id="prerecord" class="form-check-input" checked>
+                        <label for="prerecord" class="form-check-label">Предварительная запись</label>
+                        <br>
+                        <input type="checkbox" name="notprerecord" id="notprerecord" class="form-check-input" checked>
+                        <label for="notprerecord" class="form-check-label">Текущая запись</label>
+                    </div>
+                    <div class="mt-4 col-2">
+                        <a id="update-ticket-list-button" class="btn btn-primary">Обновить</a>
+                    </div>
+                </div>
+
+                <div class="mt-1">
+                    <span><b>Статус записи:</b></span><br>
+                    {% for status in statuses %}
+                        <input type="checkbox" name="{{ status.db_name }}" id="{{ status.db_name }}"
+                               class="form-check-input statuses-form" {% if status.default %}checked{% endif %}>
+                        <label for="{{ status.db_name }}" style="margin-right: 15px"
+                               class="form-check-label">{{ status.frontend_name }}</label>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+        <div class="mt-1 search">
+            <input type="text" id="searchInput" class="form-control" placeholder="Поиск..."/>
+        </div>
     </div>
     <div id="tickets-list">
-        <p>Таблица со списком талонов</p>
-        <div id="table-tickets-list"></div>
+        <div>
+            <table id="ticket-table">
+                <thead>
+                <tr>
+                    <th style='width: 5%'>Время записи</th>
+                    <th style='width: 5%'>Талон</th>
+                    <th style='width: 14%'>Статус</th>
+                    <th style='width: 10%'>Время ожидания</th>
+                    <th style='width: 12%'>Тип записи</th>
+                    <th style='width: 27%'>Услуга</th>
+                    <th style='width: 14%'>Заявитель</th>
+                    <th style="width: 12%">Специалист</th>
+                </tr>
+                </thead>
+                <tbody class='ticket-list-body'>
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock content %}
 
-{%block is_rady%}
+{% block is_rady %}
     <script>
+        let img_delete_url = '{% static "icons/delete.svg" %}'
+        let img_redirect_url = '{% static "icons/redirect.svg" %}'
+    </script>
+    <script src="{% static 'scripts/tickets_list/load_tickets_list.js' %}"></script>
+    <script>
+        let load_tickets_list_url = "{% url "supervisor:fetch_tickets_list" %}";
 
-        let table = document.getElementById('table-tickets-list')
-        function get_tickets_list() {
-            let options = {
-                method: 'GET',
-                mode: 'same-origin',
-            }
-            fetch(
-                "{% url 'supervisor:fetch_tickets_list' %}", options).then(
-                    response => response.json()).then(data => {
-                console.log(data.content)
-                table.innerHTML = data.content
-            })
-        }
+        const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
 
         document.addEventListener('DOMContentLoaded', (event) => {
-            get_tickets_list()
+            get_tickets_list();
+        })
+        document.getElementById('update-ticket-list-button').addEventListener('click', function (e) {
+            get_tickets_list();
         })
 
-        document.querySelector('a.update-button').addEventListener('click', function (e) {
-            get_tickets_list()
-        })
-        
-        
-        
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('ticket-table').getElementsByTagName('tbody')[0];
+
+    </script>
+    <script src="{% static 'scripts/tickets_list/search_tickets.js' %}"></script>
+    <script>
+        searchInput.addEventListener('input', filterTable);
     </script>
 {% endblock is_rady %}

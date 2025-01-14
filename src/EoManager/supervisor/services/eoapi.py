@@ -4,22 +4,32 @@ from typing import Union
 import requests
 from django.conf import settings
 from django.http import HttpResponseServerError
+from django.http import HttpRequest
 
 from supervisor.services.models.tickets_list import Content as TicketListContent
+from supervisor.services.encoding.ticket_status import ticket_statuses
 
 
 class RequestTicketsListParams:
+    """Параметры для GET запроса получения списка талонов с сервера ЭО"""
     def __init__(
             self,
-            date_from: datetime.date,
-            date_to: datetime.date,
-            record_states: tuple = tuple(),
+            date_from: datetime.date = datetime.date.today(),
+            date_to: datetime.date = datetime.date.today(),
+            division_id: int = 0,
+            record_states: tuple[str] = tuple(),
+
             prerecord: bool = False,
             not_prerecord: bool = False,
+
             ) -> None:
         self.date_from = date_from
         self.date_to = date_to
+        self.division_id = division_id
         self.record_states = record_states
+        self.__create_record_type_param(prerecord, not_prerecord)
+
+    def __create_record_type_param(self, prerecord: bool, not_prerecord: bool):
         if prerecord and not not_prerecord:
             self.record_type = True
         elif not prerecord and not_prerecord:
@@ -27,14 +37,51 @@ class RequestTicketsListParams:
         else:
             self.record_type = None
 
+    def set_request_get_params(self, request: HttpRequest):
+        try:
+            date_param = datetime.datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
+        except Exception:
+            date_param = datetime.date.today()
+
+        try:
+            division_param = int(request.GET['division'])
+        except:
+            division_param = 0
+
+        try:
+            prerecord = True if (request.GET['prerecord']) == 'true' else False
+            not_prerecord = True if (request.GET['notprerecord']) == 'true' else False
+        except Exception:
+            prerecord = not_prerecord = False
+
+        record_statuses = []
+        statuses = ticket_statuses.get_all()
+        for status in statuses:
+            try:
+                if request.GET[status['db_name']] == 'true':
+                    record_statuses.append(status['db_name'])
+            except Exception as _ex:
+                print(_ex)
+                continue
+
+        self.date_from = date_param
+        self.date_to = date_param
+        self.division_id = division_param
+        self.record_states = tuple(record_statuses)
+        self.prerecord = prerecord
+        self.not_prerecord = not_prerecord
+        print(self.date_from)
+
     def get_url_params(self) -> list:
+        """Формирует список параметров в формате для добавления в URL в виде параметров запроса"""
         params = []
         params.append(f'queueDateFrom={datetime.datetime.strftime(self.date_from, '%Y-%m-%d')}+00:00')
         params.append(f'queueDateTo={datetime.datetime.strftime(self.date_to, '%Y-%m-%d')}+23:59')
+        params.append(f'divisionIds={self.division_id}')
         for record_state in self.record_states:
             params.append(f'recordState={record_state}')
-        if record_state:
-            params.append(f'recordType=true') if record_state else params.append(f'recordType=false')
+        if self.record_type is not None:
+            params.append(f'recordType=true') if self.record_type else params.append(f'recordType=false')
         return params
 
 
@@ -91,16 +138,11 @@ class TicketsManager(EoApi):
         return url
         
 
-    def get_tickets_list(self) -> str:
-        """Возвращает список талонов"""
+    def get_tickets_list(self, params: RequestTicketsListParams) -> str:
+        """Возвращает список талонов для импорта на сайт"""
         self._check_authorization()
-        params = RequestTicketsListParams(  # TODO: Добавить генерацию параметров на основе формы
-            date_from=datetime.date(2024, 11, 23),
-            date_to=datetime.date(2024, 11, 23),
-            record_states=('SERVING', 'WAIT_QUEUE'),
-        ).get_url_params()
         tickets_response = self.session.get(url=self.__create_request_ticket_list_url(
-            params=params,
+            params=params.get_url_params(),
         ))
         return TicketListContent.parse_raw(tickets_response.text).json()
 
@@ -117,3 +159,4 @@ class WindowsManager(EoApi):
         """Возвращает список талонов"""
         self._check_authorization()
         windows_response = self.session.get(url=self.__create_request_windows_list_url())
+        pass
