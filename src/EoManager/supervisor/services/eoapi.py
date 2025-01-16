@@ -53,6 +53,8 @@ class RequestTicketsListParams:
             not_prerecord = True if (request.GET['notprerecord']) == 'true' else False
         except Exception:
             prerecord = not_prerecord = False
+        self.__create_record_type_param(prerecord, not_prerecord)
+
 
         record_statuses = []
         statuses = ticket_statuses.get_all()
@@ -70,7 +72,6 @@ class RequestTicketsListParams:
         self.record_states = tuple(record_statuses)
         self.prerecord = prerecord
         self.not_prerecord = not_prerecord
-        print(self.date_from)
 
     def get_url_params(self) -> list:
         """Формирует список параметров в формате для добавления в URL в виде параметров запроса"""
