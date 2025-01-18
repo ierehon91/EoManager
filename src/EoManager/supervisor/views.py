@@ -1,29 +1,32 @@
 import datetime
 
 from django.shortcuts import render
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 
 from supervisor.services.eoapi import TicketsManager, RequestTicketsListParams
 from supervisor.services.encoding.ticket_status import ticket_statuses
+from supervisor.models import Division, Profile
 
 
 @login_required
 @require_GET
 def tickets_list(request: HttpRequest) -> HttpResponse:
     """Страница со списком талонов"""
+    divisions = request.user.profile.divisions.values()
     return render(
         request, 'supervisor/tickets_list.html', context={
             'statuses': ticket_statuses.get_all(),
             'date': datetime.date.today().strftime('%Y-%m-%d'),
+            'divisions': divisions
         }
     )
 
 
 @login_required
 # @require_GET
-def fetch_tickets_list(request: HttpRequest) -> str:
+def fetch_tickets_list(request: HttpRequest) -> HttpResponse | HttpResponseForbidden:
     """JSON со списком талонов"""
     api = TicketsManager()
 
@@ -31,7 +34,11 @@ def fetch_tickets_list(request: HttpRequest) -> str:
     params.set_request_get_params(request)
 
     result = api.get_tickets_list(params=params)
-    return HttpResponse(result)
+    if RequestTicketsListParams.check_division_access(request.user, params.division_id):
+        return HttpResponse(result)
+    return HttpResponseForbidden(
+        f'Ошибка доступа. Пользователь {request.user.username} не добавлен в подразделение с ID: {params.division_id}'
+    )
 
 
 @login_required

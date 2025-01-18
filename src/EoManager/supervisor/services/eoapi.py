@@ -3,8 +3,9 @@ from typing import Union
 
 import requests
 from django.conf import settings
-from django.http import HttpResponseServerError
+from django.http import HttpResponseServerError, HttpResponseForbidden
 from django.http import HttpRequest
+from django.contrib.auth.models import User
 
 from supervisor.services.models.tickets_list import Content as TicketListContent
 from supervisor.services.encoding.ticket_status import ticket_statuses
@@ -53,7 +54,6 @@ class RequestTicketsListParams:
             not_prerecord = True if (request.GET['notprerecord']) == 'true' else False
         except Exception:
             prerecord = not_prerecord = False
-        self.__create_record_type_param(prerecord, not_prerecord)
 
 
         record_statuses = []
@@ -72,6 +72,12 @@ class RequestTicketsListParams:
         self.record_states = tuple(record_statuses)
         self.prerecord = prerecord
         self.not_prerecord = not_prerecord
+
+    @staticmethod
+    def check_division_access(user: User, division_id: int):
+        if division_id in user.profile.divisions.values_list('division_id', flat=True):
+            return True
+        return False
 
     def get_url_params(self) -> list:
         """Формирует список параметров в формате для добавления в URL в виде параметров запроса"""

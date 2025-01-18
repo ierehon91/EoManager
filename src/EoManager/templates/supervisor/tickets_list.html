@@ -21,19 +21,11 @@
 
                     <div class="mt-1 col-5">
                         <label for="division"><b>Подразделение:</b></label>
+
                         <select name="division" id="division" class="form-control">
-
-                            <option value="1911">СМАРТ-МФЦ в г. Семилуки</option>
-                            <option value="1924">СМАРТ-МФЦ в рп Хохольском</option>
-                            <option value="1903">СМАРТ-МФЦ в Коминтерновском районе г. Воронежа</option>
-                            <option value="1917">СМАРТ-МФЦ в г. Калаче</option>
-                            <option value="1902">СМАРТ-МФЦ в г. Россошь</option>
-                            <option value="97930927">СМАРТ-МФЦ "ГРАД"</option>
-                            <option value="14048028">СМАРТ-МФЦ в Центральном районе г. Воронежа</option>
-                            <option value="1930">СМАРТ-МФЦ города Воронеж №1</option>
-                            <option value="1905">СМАРТ-МФЦ в г. Нововоронеже</option>
-                            <option value="1939">Филиал АУ «МФЦ» в Коминтерновском районе "Северный" г.Воронежа</option>
-
+                            {% for division in divisions %}
+                            	<option value="{{ division.division_id }}">{{ division.name}}</option>
+                            {% endfor %}
                         </select>
                     </div>
 
